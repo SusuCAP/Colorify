@@ -29,11 +29,10 @@
 - openpyxl库
 - win32com.client (Windows系统处理.xls文件时需要)
 
-## 安装依赖
+## 激活环境
 
 ~~~bash
-pip install openpyxl
-pip install pywin32 # Windows系统需要
+.\.venv\Scripts\activate
 ~~~
 
 
