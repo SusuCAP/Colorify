@@ -266,35 +266,69 @@ def process_single_excel(file_path, input_number, excel=None, output_dir=None):
                 # 定义区域映射规则 - 每个区域对应2个数字
                 rules = {
                     1: {
-                        'area1': [6,1], 'area2': [5,6], 'area3': [4,5],
-                        'area4': [3,4], 'area5': [2,3], 'area6': [1,2]
+                        'area1': [6,1],  # 第1区域找6和1
+                        'area2': [5,6],  # 第2区域找5和6
+                        'area3': [4,5],  # 第3区域找4和5
+                        'area4': [3,4],  # 第4区域找3和4
+                        'area5': [2,3],  # 第5区域找2和3
+                        'area6': [1,2]   # 第6区域找1和2
                     },
                     2: {
-                        'area1': [1,2], 'area2': [6,1], 'area3': [5,6],
-                        'area4': [4,5], 'area5': [3,4], 'area6': [2,3]
+                        'area1': [1,2],  # 第1区域找1和2
+                        'area2': [6,1],  # 第2区域找6和1
+                        'area3': [5,6],  # 第3区域找5和6
+                        'area4': [4,5],  # 第4区域找4和5
+                        'area5': [3,4],  # 第5区域找3和4
+                        'area6': [2,3]   # 第6区域找2和3
                     },
                     3: {
-                        'area1': [2,3], 'area2': [1,2], 'area3': [6,1],
-                        'area4': [5,6], 'area5': [4,5], 'area6': [3,4]
+                        'area1': [2,3],  # 第1区域找2和3
+                        'area2': [1,2],  # 第2区域找1和2
+                        'area3': [6,1],  # 第3区域找6和1
+                        'area4': [5,6],  # 第4区域找5和6
+                        'area5': [4,5],  # 第5区域找4和5
+                        'area6': [3,4]   # 第6区域找3和4
                     },
                     4: {
-                        'area1': [3,4], 'area2': [2,3], 'area3': [1,2],
-                        'area4': [6,1], 'area5': [5,6], 'area6': [4,5]
+                        'area1': [3,4],  # 第1区域找3和4
+                        'area2': [2,3],  # 第2区域找2和3
+                        'area3': [1,2],  # 第3区域找1和2
+                        'area4': [6,1],  # 第4区域找6和1
+                        'area5': [5,6],  # 第5区域找5和6
+                        'area6': [4,5]   # 第6区域找4和5
                     },
                     5: {
-                        'area1': [4,5], 'area2': [3,4], 'area3': [2,3],
-                        'area4': [1,2], 'area5': [6,1], 'area6': [5,6]
+                        'area1': [4,5],  # 第1区域找4和5
+                        'area2': [3,4],  # 第2区域找3和4
+                        'area3': [2,3],  # 第3区域找2和3
+                        'area4': [1,2],  # 第4区域找1和2
+                        'area5': [6,1],  # 第5区域找6和1
+                        'area6': [5,6]   # 第6区域找5和6
                     },
                     6: {
-                        'area1': [5,6], 'area2': [4,5], 'area3': [3,4],
-                        'area4': [2,3], 'area5': [1,2], 'area6': [6,1]
+                        'area1': [5,6],  # 第1区域找5和6
+                        'area2': [4,5],  # 第2区域找4和5
+                        'area3': [3,4],  # 第3区域找3和4
+                        'area4': [2,3],  # 第4区域找2和3
+                        'area5': [1,2],  # 第5区域找1和2
+                        'area6': [6,1]   # 第6区域找6和1
                     }
+                }
+
+                # 定义固定的区域范围
+                area_ranges = {
+                    1: (2, 8),      # B-H列
+                    2: (10, 16),    # J-P列
+                    3: (18, 24),    # R-X列
+                    4: (27, 33),    # AA-AG列
+                    5: (35, 41),    # AI-AO列
+                    6: (43, 49)     # AQ-AW列
                 }
 
                 # 设置填充颜色 (RGB: 237, 112, 45)
                 orange_fill = PatternFill(start_color='ED702D', end_color='ED702D', fill_type='solid')
 
-                # 在找到的空行中填入数字
+                # 在Z列填入输入数字
                 ws[f'Z{empty_row}'].value = input_number
 
                 print(f"\n处理输入数字: {input_number}")
@@ -302,55 +336,21 @@ def process_single_excel(file_path, input_number, excel=None, output_dir=None):
                 for i in range(1, 7):
                     print(f"区域{i}查找: {rules[input_number][f'area{i}']}")
 
-                # 处理每个区域
-                current_area = 1  # 当前处理的区域编号
-                consecutive_empty = 0  # 连续空列计数
-                last_non_empty = None  # 上一个非空列
-                area_columns = {}  # 记录每个区域的列范围
-
-                for col in range(2, ws.max_column + 1):  # 从B列开始
-                    cell = ws.cell(row=empty_row, column=col)
+                # 处理每个固定区域
+                for area_num, (start_col, end_col) in area_ranges.items():
+                    area_name = f'area{area_num}'
+                    print(f"\n处理区域{area_num} ({ws.cell(row=1, column=start_col).column_letter}-{ws.cell(row=1, column=end_col).column_letter}列)")
                     
-                    # 检查是否是空列
-                    is_empty_col = True
-                    for row in range(1, ws.max_row + 1):
-                        if ws.cell(row=row, column=col).value is not None:
-                            is_empty_col = False
-                            break
-                    
-                    if is_empty_col:
-                        consecutive_empty += 1
-                        continue
-                    
-                    # 如果遇到非空列，且之前有连续的空列
-                    if consecutive_empty > 0:
-                        if last_non_empty is not None:  # 说明这是一个新区域的开始
-                            # 记录上一个区域的列范围
-                            area_columns[current_area] = (last_non_empty, col-consecutive_empty-1)
-                            current_area += 1
-                        consecutive_empty = 0
-                    
-                    last_non_empty = col
-                    
-                    # 处理当前单元格
-                    if cell.value is not None:
-                        cell_value = cell.value
-                        if isinstance(cell_value, (int, float)):
-                            cell_value = int(cell_value)
-                            area_name = f'area{current_area}'
-                            if current_area <= 6 and cell_value in rules[input_number][area_name]:
-                                cell.fill = orange_fill
-                                print(f"在区域{current_area}(列{col})找到匹配数字: {cell_value}")
-
-                # 记录最后一个区域的列范围
-                if last_non_empty is not None:
-                    area_columns[current_area] = (last_non_empty, ws.max_column)
-
-                print("\n区域列范围:")
-                for area, (start, end) in area_columns.items():
-                    col_letter_start = ws.cell(row=1, column=start).column_letter
-                    col_letter_end = ws.cell(row=1, column=end).column_letter
-                    print(f"区域{area}: {col_letter_start}-{col_letter_end}")
+                    # 在当前区域范围内查找匹配的数字
+                    for col in range(start_col, end_col + 1):
+                        cell = ws.cell(row=empty_row, column=col)
+                        if cell.value is not None:
+                            cell_value = cell.value
+                            if isinstance(cell_value, (int, float)):
+                                cell_value = int(cell_value)
+                                if cell_value in rules[input_number][area_name]:
+                                    cell.fill = orange_fill
+                                    print(f"在区域{area_num}(列{ws.cell(row=1, column=col).column_letter})找到匹配数字: {cell_value}")
 
                 sheets_processed = True
 
